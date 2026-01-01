@@ -71,6 +71,28 @@ const handler = (e: Event) => {
       });
     }
   };
+const scheduleNotificationAt1450 = () => {
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  const now = new Date();
+  const target = new Date();
+
+  target.setHours(14, 50, 0, 0); // 14:50 today
+
+  // If 14:50 already passed, do nothing
+  if (target.getTime() <= now.getTime()) return;
+
+  const delay = target.getTime() - now.getTime();
+
+  setTimeout(() => {
+    new Notification("💌 A Gentle Reminder", {
+      body: "Something special is awakening later today… ❤️",
+      icon: "/android-chrome-192x192.png",
+      requireInteraction: true,
+    });
+  }, delay);
+};
 
   const startCountdownWatch = () => {
     const watchTimer = setInterval(() => {
@@ -102,6 +124,13 @@ const handler = (e: Event) => {
     await deferredPrompt.userChoice;
     setDeferredPrompt(null);
   }
+  if ("Notification" in window) {
+  const permission = await Notification.requestPermission();
+  if (permission === "granted") {
+    scheduleNotificationAt1450();
+  }
+}
+
     // Request permission as soon as they tap
     if ("Notification" in window) {
       await Notification.requestPermission();
