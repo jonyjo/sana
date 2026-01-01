@@ -97,6 +97,11 @@ const handler = (e: Event) => {
   };
 
   const handleAwaken = async () => {
+      if (deferredPrompt) {
+    await deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+  }
     // Request permission as soon as they tap
     if ("Notification" in window) {
       await Notification.requestPermission();
@@ -134,28 +139,6 @@ const handler = (e: Event) => {
           </p>
         </div>
       )}
-      {showInstall && (
-  <button
-    onClick={async () => {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      if (choice.outcome === "accepted") {
-        console.log("PWA installed");
-      }
-      setDeferredPrompt(null);
-      setShowInstall(false);
-    }}
-    className="mt-6 px-10 py-4 rounded-full bg-rose-500 text-white font-black text-xs uppercase tracking-widest shadow-lg hover:scale-105 transition"
-  >
-    Install App ❤️
-  </button>
-)}
-{isIOS && (
-  <p className="mt-6 text-xs text-rose-400">
-    Tap <strong>Share</strong> → <strong>Add to Home Screen</strong> ❤️
-  </p>
-)}
 
 
       <div className="love-content flex flex-col items-center text-center">
