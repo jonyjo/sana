@@ -25,14 +25,14 @@
   "screenshots": [
     {
       "src": "/ss1.png",
-      "sizes": "1920x854",
+      "sizes": "1914x855",
       "type": "image/png",
       "form_factor": "wide",
       "label": "The Heartbeat Entry"
     },
     {
       "src": "/ss2.png",
-      "sizes": "469x840",
+      "sizes": "477x865",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "The Birthday Countdown"

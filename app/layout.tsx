@@ -13,7 +13,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Birthday Vault",
-  manifest: "/site.webmanifest",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
