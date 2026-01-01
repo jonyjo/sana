@@ -4,11 +4,40 @@ import gsap from "gsap";
 import { Heart, Sparkles, ArrowRight, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform: string;
+  }>;
+}
+
+
 export default function Home() {
   const [timeLeft, setTimeLeft] = useState({ h: "00", m: "00", s: "00" });
   const [isAwakened, setIsAwakened] = useState(false);
   const router = useRouter();
   const heartRef = useRef(null);
+const [deferredPrompt, setDeferredPrompt] =
+  useState<BeforeInstallPromptEvent | null>(null);
+const [showInstall, setShowInstall] = useState(false);
+const isIOS =
+  typeof window !== "undefined" &&
+  /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+
+useEffect(() => {
+const handler = (e: Event) => {
+  e.preventDefault();
+  setDeferredPrompt(e as BeforeInstallPromptEvent);
+  setShowInstall(true);
+};
+
+
+  window.addEventListener("beforeinstallprompt", handler);
+
+  return () => window.removeEventListener("beforeinstallprompt", handler);
+}, []);
 
   // 1. Timer for the on-screen display
   useEffect(() => {
@@ -105,6 +134,29 @@ export default function Home() {
           </p>
         </div>
       )}
+      {showInstall && (
+  <button
+    onClick={async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === "accepted") {
+        console.log("PWA installed");
+      }
+      setDeferredPrompt(null);
+      setShowInstall(false);
+    }}
+    className="mt-6 px-10 py-4 rounded-full bg-rose-500 text-white font-black text-xs uppercase tracking-widest shadow-lg hover:scale-105 transition"
+  >
+    Install App ❤️
+  </button>
+)}
+{isIOS && (
+  <p className="mt-6 text-xs text-rose-400">
+    Tap <strong>Share</strong> → <strong>Add to Home Screen</strong> ❤️
+  </p>
+)}
+
 
       <div className="love-content flex flex-col items-center text-center">
         <div className="relative mb-8">
