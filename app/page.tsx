@@ -71,88 +71,84 @@ const handler = (e: Event) => {
       });
     }
   };
-const scheduleNotificationAt1450 = () => {
-  if (!("Notification" in window)) return;
-  if (Notification.permission !== "granted") return;
 
-  const now = new Date();
-  const target = new Date();
+const startCountdownWatch = () => {
+  let fired15 = false;
+  let fired5 = false;
+  let firedMidnight = false;
 
-  target.setHours(14, 50, 0, 0); // 14:50 today
+  const watchTimer = setInterval(() => {
+    const now = new Date();
+    const target = new Date();
+    target.setHours(24, 0, 0, 0); // Midnight
 
-  // If 14:50 already passed, do nothing
-  if (target.getTime() <= now.getTime()) return;
+    const diffSeconds = Math.floor(
+      (target.getTime() - now.getTime()) / 1000
+    );
 
-  const delay = target.getTime() - now.getTime();
+    // ⏰ 15 minutes before (11:45 PM)
+    if (diffSeconds <= 900 && diffSeconds > 890 && !fired15) {
+      triggerBirthdayNotification(
+        "15 Minutes to Go 💫",
+        "Something magical is about to begin… ❤️"
+      );
+      fired15 = true;
+    }
 
-  setTimeout(() => {
-    new Notification("💌 A Gentle Reminder", {
-      body: "Something special is awakening later today… ❤️",
-      icon: "/android-chrome-192x192.png",
-      requireInteraction: true,
-    });
-  }, delay);
+    // ⏰ 5 minutes before (11:55 PM)
+    if (diffSeconds <= 300 && diffSeconds > 290 && !fired5) {
+      triggerBirthdayNotification(
+        "5 Minutes Left ⏳",
+        "Get ready… the moment is almost here ✨"
+      );
+      fired5 = true;
+    }
+
+    // 🎉 Midnight (12:00 AM)
+    if (diffSeconds <= 0 && !firedMidnight) {
+      triggerBirthdayNotification(
+        "HAPPY BIRTHDAY 🎉❤️",
+        "Wishing you a day full of love, surprises, and joy ✨"
+      );
+      firedMidnight = true;
+      clearInterval(watchTimer);
+    }
+  }, 1000);
 };
 
-  const startCountdownWatch = () => {
-    const watchTimer = setInterval(() => {
-      const target = new Date();
-      target.setHours(24, 0, 0, 0);
-      const now = new Date();
-      const diffInMs = target.getTime() - now.getTime();
-      const diffInSecs = Math.floor(diffInMs / 1000);
-
-      // 10 Minutes (600 seconds)
-      if (diffInSecs === 600) {
-        triggerBirthdayNotification("10 Minutes Left ✨", "The vault is beginning to glow. Almost time.");
-      }
-      // 5 Minutes (300 seconds)
-      if (diffInSecs === 300) {
-        triggerBirthdayNotification("5 Minutes Remaining ⏳", "Final calibration in progress. Get ready.");
-      }
-      // Midnight (0 seconds)
-      if (diffInSecs === 0) {
-        triggerBirthdayNotification("HAPPY BIRTHDAY! ❤️", "The Heartbeat Vault is officially OPEN. Tap to enter.");
-        clearInterval(watchTimer);
-      }
-    }, 1000);
-  };
-
-  const handleAwaken = async () => {
-      if (deferredPrompt) {
+const handleAwaken = async () => {
+  if (deferredPrompt) {
     await deferredPrompt.prompt();
     await deferredPrompt.userChoice;
     setDeferredPrompt(null);
   }
+
   if ("Notification" in window) {
-  const permission = await Notification.requestPermission();
-  if (permission === "granted") {
-    scheduleNotificationAt1450();
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return;
   }
-}
 
-    // Request permission as soon as they tap
-    if ("Notification" in window) {
-      await Notification.requestPermission();
-    }
+  if (navigator.vibrate) navigator.vibrate([50, 20, 50]);
 
-    if (navigator.vibrate) navigator.vibrate([50, 20, 50]);
-    
-    // Start the background countdown listener
-    startCountdownWatch();
-    
-    const tl = gsap.timeline({ onComplete: () => setIsAwakened(true) });
-    
-    tl.to(heartRef.current, { scale: 0.8, duration: 0.1 })
-      .to(heartRef.current, { 
-        scale: 100, 
-        opacity: 0, 
-        duration: 1.2, 
-        ease: "expo.in",
-        filter: "blur(20px)" 
-      })
-      .from(".love-content", { scale: 0.9, opacity: 0, duration: 1, ease: "back.out(1.7)" });
-  };
+  startCountdownWatch();
+
+  const tl = gsap.timeline({ onComplete: () => setIsAwakened(true) });
+
+  tl.to(heartRef.current, { scale: 0.8, duration: 0.1 })
+    .to(heartRef.current, {
+      scale: 100,
+      opacity: 0,
+      duration: 1.2,
+      ease: "expo.in",
+      filter: "blur(20px)",
+    })
+    .from(".love-content", {
+      scale: 0.9,
+      opacity: 0,
+      duration: 1,
+      ease: "back.out(1.7)",
+    });
+};
 
   return (
     <main className="relative min-h-screen bg-[#050208] text-rose-50 flex flex-col items-center justify-center px-6 overflow-hidden">
