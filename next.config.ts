@@ -1,18 +1,24 @@
 import type { NextConfig } from "next";
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development'
+});
 
 const nextConfig: NextConfig = {
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
     ignoreBuildErrors: true,
   },
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
+  // Turbopack fix: tells Next.js we are aware of custom webpack usage
+  experimental: {
+    turbopack: {
+      // You can leave this empty
+    },
   },
 };
 
-export default nextConfig;
+// Note: ESLint ignore is now handled in .eslintrc or via CLI, 
+// so we removed the 'eslint' key from here.
+
+export default withPWA(nextConfig);

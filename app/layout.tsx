@@ -1,58 +1,52 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import "./globals.css"
+import type React from "react";
+import type { Metadata, Viewport } from "next";
+import "./globals.css";
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+export const viewport: Viewport = {
+  themeColor: "#050208",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false, // Prevents accidental zooming during the "Tap" game
+  viewportFit: "cover", // Forces app to fill the screen on iPhones
+};
 
 export const metadata: Metadata = {
-  title: "Your Birthday Celebration 🎉",
-  description: "An elevated, interactive birthday experience crafted with care",
-  generator: "v0.app",
-  icons: {
-    icon: [
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-  },
-  manifest: "/manifest.json",
+  title: "Birthday Vault",
+  manifest: "/site.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Birthday Celebration",
+    title: "Birthday Vault",
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en">
       <head>
-        <meta name="theme-color" content="#020617" />
-        <meta name="mobile-web-app-capable" content="true" />
-        <meta name="apple-mobile-web-app-capable" content="true" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Birthday" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        {/* Service Worker Script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js').catch(() => {});
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+                });
               }
             `,
           }}
         />
       </head>
-      <body className={`font-sans antialiased overflow-x-hidden`}>
+      <body className="antialiased overflow-x-hidden bg-[#050208] selection:bg-rose-500/30">
         {children}
       </body>
     </html>
-  )
+  );
 }

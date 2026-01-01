@@ -10,26 +10,76 @@ export default function Home() {
   const router = useRouter();
   const heartRef = useRef(null);
 
+  // 1. Timer for the on-screen display
   useEffect(() => {
     const timer = setInterval(() => {
       const target = new Date();
       target.setHours(24, 0, 0, 0);
-      const diff = target.getTime() - new Date().getTime();
+      const now = new Date();
+      const diff = target.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeLeft({ h: "00", m: "00", s: "00" });
+        return;
+      }
+
       setTimeLeft({
-        h: Math.max(0, Math.floor((diff / 36e5) % 24)).toString().padStart(2, "0"),
-        m: Math.max(0, Math.floor((diff / 6e4) % 60)).toString().padStart(2, "0"),
-        s: Math.max(0, Math.floor((diff / 1e3) % 60)).toString().padStart(2, "0")
+        h: Math.floor((diff / 36e5) % 24).toString().padStart(2, "0"),
+        m: Math.floor((diff / 6e4) % 60).toString().padStart(2, "0"),
+        s: Math.floor((diff / 1e3) % 60).toString().padStart(2, "0")
       });
     }, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const handleAwaken = () => {
+  // 2. Notification Logic
+  const triggerBirthdayNotification = (title: string, body: string) => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, {
+        body: body,
+        icon: "/android-chrome-192x192.png",
+        requireInteraction: true, // Keeps it visible
+      });
+    }
+  };
+
+  const startCountdownWatch = () => {
+    const watchTimer = setInterval(() => {
+      const target = new Date();
+      target.setHours(24, 0, 0, 0);
+      const now = new Date();
+      const diffInMs = target.getTime() - now.getTime();
+      const diffInSecs = Math.floor(diffInMs / 1000);
+
+      // 10 Minutes (600 seconds)
+      if (diffInSecs === 600) {
+        triggerBirthdayNotification("10 Minutes Left ✨", "The vault is beginning to glow. Almost time.");
+      }
+      // 5 Minutes (300 seconds)
+      if (diffInSecs === 300) {
+        triggerBirthdayNotification("5 Minutes Remaining ⏳", "Final calibration in progress. Get ready.");
+      }
+      // Midnight (0 seconds)
+      if (diffInSecs === 0) {
+        triggerBirthdayNotification("HAPPY BIRTHDAY! ❤️", "The Heartbeat Vault is officially OPEN. Tap to enter.");
+        clearInterval(watchTimer);
+      }
+    }, 1000);
+  };
+
+  const handleAwaken = async () => {
+    // Request permission as soon as they tap
+    if ("Notification" in window) {
+      await Notification.requestPermission();
+    }
+
     if (navigator.vibrate) navigator.vibrate([50, 20, 50]);
+    
+    // Start the background countdown listener
+    startCountdownWatch();
     
     const tl = gsap.timeline({ onComplete: () => setIsAwakened(true) });
     
-    // Heart expansion effect
     tl.to(heartRef.current, { scale: 0.8, duration: 0.1 })
       .to(heartRef.current, { 
         scale: 100, 
@@ -50,7 +100,9 @@ export default function Home() {
             <Heart className="w-24 h-24 text-rose-500 fill-rose-500 animate-pulse relative z-10" />
             <Zap className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-50" size={30} />
           </div>
-          <p className="mt-16 text-[10px] uppercase tracking-[0.8em] text-rose-500 font-bold animate-bounce">Tap to Unleash</p>
+          <p className="mt-16 text-[10px] uppercase tracking-[0.8em] text-rose-500 font-bold animate-bounce text-center">
+            Tap to Unleash <br/> & Enable Alerts
+          </p>
         </div>
       )}
 
